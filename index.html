@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Philosophy of Kizuna</title>
+    <link rel="icon" type="image/png" href="assets/favicons/favicon-96x96.png" sizes="96x96"/>
+    <link rel="icon" type="image/svg+xml" href="assets/favicons/favicon.svg"/>
+    <link rel="shortcut icon" href="assets/favicons/favicon.ico"/>
+    <link rel="apple-touch-icon" sizes="180x180" href="assets/favicons/apple-touch-icon.png"/>
+    <link rel="manifest" href="assets/favicons/site.webmanifest"/>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Serene Earth -->
+    <!-- Application Structure Plan: The SPA is designed for non-linear exploration, prioritizing user discovery over the report's linear structure. The core architecture is a central hub navigating to three main thematic sections: Self, World, and Transcendence. This structure was chosen because the report's primary insight is this three-part framework. It allows users to immediately grasp the core concept and dive into the pillar that interests them most. Within each pillar, interactive cards are used to present detailed philosophical concepts, preventing cognitive overload from long text blocks. An interactive chart at the beginning introduces the central conflict (bond vs. fetter), immediately engaging the user with the report's key tension. The final section visualizes the 'virtuous cycle,' synthesizing the three pillars into a memorable takeaway. This user-driven, modular design makes the dense philosophical content more accessible and digestible. -->
+    <!-- Visualization & Content Choices: 
+        1.  Report Info: Contested interpretations of <em>Kizuna</em> (Traditional, Official, Critical). Goal: Compare. Viz Method: Interactive Bar Chart (Chart.js). Interaction: Clicking a bar reveals detailed text for that interpretation. Justification: A chart provides a clear visual comparison of the different viewpoints, while the interaction allows for a deep dive into the nuances of each without cluttering the initial view.
+        2.  Report Info: The three-pillar framework (Self, World, Transcendence). Goal: Organize/Navigate. Presentation Method: Large, clickable navigation cards (HTML/CSS). Interaction: Clicking a card smoothly scrolls to the relevant content section. Justification: This creates a clear, visually appealing central navigation hub that forms the backbone of the user's journey through the application.
+        3.  Report Info: Supporting philosophical concepts (Ikigai, Wa, Kami, etc.). Goal: Inform/Organize. Presentation Method: A grid of interactive cards (HTML/CSS). Interaction: Clicking a card reveals a detailed explanation in a dedicated content area. Justification: This "drill-down" approach breaks down complex information into manageable chunks, encouraging exploration without overwhelming the user.
+        4.  Report Info: The integrated 'virtuous cycle' of the three pillars. Goal: Show Relationships. Presentation Method: An image of the core framework diagram. Interaction: None, static visual. Justification: Using the official, user-provided diagram ensures fidelity to the source material and provides a clear, aesthetically consistent visual anchor for the report's conclusion.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', 'Noto Sans JP', sans-serif;
+            background-color: #FDFBF8;
+            color: #38332E;
+        }
+        .kanji-title {
+            font-family: 'Noto Sans JP', sans-serif;
+        }
+        .active-nav {
+            background-color: #D1C7B9;
+            color: #FDFBF8;
+        }
+        .inactive-nav {
+            background-color: #EFEAE3;
+            color: #38332E;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+        .concept-card {
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+        .concept-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+        .concept-card.active {
+            border-color: #A69888;
+            transform: translateY(-2px);
+            background-color: #F5F1EC;
+        }
+        .content-fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <header class="py-8 px-4 text-center">
+        <h1 class="text-6xl md:text-8xl font-bold kanji-title" style="color: #4A443D;">絆</h1>
+        <h2 class="text-2xl md:text-3xl font-bold mt-2" style="color: #4A443D;">Kizuna: An Interactive Exploration</h2>
+        <p class="mt-4 max-w-3xl mx-auto text-lg text-gray-600">
+            A deep dive into the Japanese concept of bonds (絆). This experience explores its dual nature—as a source of profound connection and as a potential fetter—through a framework of Self, World, and Transcendence.
+        </p>
+    </header>
+
+    <main class="container mx-auto px-4 py-8">
+        
+        <section id="duality" class="mb-16">
+            <h3 class="text-3xl font-bold text-center mb-2">The Two Faces of a Bond</h3>
+            <p class="text-center text-gray-600 max-w-3xl mx-auto mb-8">
+                The word <em>Kizuna</em> holds a powerful duality. While celebrated as a symbol of unity and support, its root kanji can also mean <em>hodashi</em> (fetters), suggesting social pressure and constraint. This section allows you to compare these contested interpretations. Click on a bar to learn more.
+            </p>
+            <div class="flex flex-col lg:flex-row gap-8 items-start">
+                <div class="w-full lg:w-1/2">
+                    <div class="chart-container">
+                        <canvas id="dualityChart"></canvas>
+                    </div>
+                </div>
+                <div id="duality-content" class="w-full lg:w-1/2 p-6 rounded-lg bg-white/50 shadow-sm min-h-[350px]">
+                </div>
+            </div>
+        </section>
+
+        <section id="framework" class="text-center mb-16">
+            <h3 class="text-3xl font-bold mb-2">A Framework for Connection</h3>
+            <p class="text-gray-600 max-w-3xl mx-auto mb-8">
+                To understand <em>Kizuna</em> holistically, we explore it through three interconnected pillars. Each represents a fundamental dimension of our bonds. Select a pillar to begin your exploration.
+            </p>
+            <nav class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+                <a href="#kizuna-self" class="pillar-nav-item group block p-8 rounded-lg text-center transition duration-300 ease-in-out bg-[#EFEAE3] hover:bg-[#D1C7B9] hover:shadow-lg">
+                    <h4 class="text-5xl font-bold kanji-title text-[#4A443D] group-hover:text-white">己</h4>
+                    <p class="text-xl font-semibold mt-2 text-[#4A443D] group-hover:text-white">Kizuna with Self</p>
+                    <p class="mt-2 text-gray-600 group-hover:text-gray-100">The Bond of Inner Harmony</p>
+                </a>
+                <a href="#kizuna-world" class="pillar-nav-item group block p-8 rounded-lg text-center transition duration-300 ease-in-out bg-[#EFEAE3] hover:bg-[#D1C7B9] hover:shadow-lg">
+                    <h4 class="text-5xl font-bold kanji-title text-[#4A443D] group-hover:text-white">界</h4>
+                    <p class="text-xl font-semibold mt-2 text-[#4A443D] group-hover:text-white">Kizuna with World</p>
+                    <p class="mt-2 text-gray-600 group-hover:text-gray-100">The Bond of Social Connection</p>
+                </a>
+                <a href="#kizuna-transcendence" class="pillar-nav-item group block p-8 rounded-lg text-center transition duration-300 ease-in-out bg-[#EFEAE3] hover:bg-[#D1C7B9] hover:shadow-lg">
+                    <h4 class="text-5xl font-bold kanji-title text-[#4A443D] group-hover:text-white">天</h4>
+                    <p class="text-xl font-semibold mt-2 text-[#4A443D] group-hover:text-white">Kizuna with Transcendence</p>
+                    <p class="mt-2 text-gray-600 group-hover:text-gray-100">The Bond with the Sacred</p>
+                </a>
+            </nav>
+        </section>
+
+        <div id="pillar-content-area">
+            <section id="kizuna-self" class="py-12 scroll-mt-16">
+                <div class="text-center mb-10">
+                    <h3 class="text-5xl font-bold kanji-title" style="color: #4A443D;">己との絆</h3>
+                    <h4 class="text-3xl font-bold mt-2">Kizuna with Self</h4>
+                    <p class="mt-4 max-w-3xl mx-auto text-lg text-gray-600">
+                        This first pillar represents a modern reinterpretation of <em>Kizuna</em>, arguing that authentic external connections must begin with a strong inner foundation. It's the process of self-realization, acceptance, and inner harmony. Explore the philosophical concepts below that help cultivate this essential bond.
+                    </p>
+                </div>
+                <div class="flex flex-col lg:flex-row gap-8">
+                    <div class="w-full lg:w-1/3">
+                        <div id="self-concepts" class="grid grid-cols-1 gap-4"></div>
+                    </div>
+                    <div class="w-full lg:w-2/3">
+                        <div id="self-content-display" class="p-6 rounded-lg bg-white/50 shadow-sm min-h-[400px]"></div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="kizuna-world" class="py-12 scroll-mt-16">
+                <div class="text-center mb-10">
+                    <h3 class="text-5xl font-bold kanji-title" style="color: #4A443D;">界との絆</h3>
+                    <h4 class="text-3xl font-bold mt-2">Kizuna with World</h4>
+                    <p class="mt-4 max-w-3xl mx-auto text-lg text-gray-600">
+                        This pillar addresses <em>Kizuna</em> in its most recognized form: the web of connections binding us to communities, society, and the globe. It's the horizontal dimension of our bonds, but also the most contested, shifting between organic social harmony and a tool of political pressure.
+                    </p>
+                </div>
+                <div class="flex flex-col lg:flex-row gap-8">
+                    <div class="w-full lg:w-1/3">
+                        <div id="world-concepts" class="grid grid-cols-1 gap-4"></div>
+                    </div>
+                    <div class="w-full lg:w-2/3">
+                        <div id="world-content-display" class="p-6 rounded-lg bg-white/50 shadow-sm min-h-[400px]"></div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="kizuna-transcendence" class="py-12 scroll-mt-16">
+                <div class="text-center mb-10">
+                    <h3 class="text-5xl font-bold kanji-title" style="color: #4A443D;">天との絆</h3>
+                    <h4 class="text-3xl font-bold mt-2">Kizuna with Transcendence</h4>
+                    <p class="mt-4 max-w-3xl mx-auto text-lg text-gray-600">
+                        The most abstract pillar elevates connection beyond the human realm. It suggests our bonds are anchored in a relationship with a reality larger than ourselves—be it nature, the cosmos, or the divine. This vertical bond provides ultimate meaning and resilience.
+                    </p>
+                </div>
+                <div class="flex flex-col lg:flex-row gap-8">
+                    <div class="w-full lg:w-1/3">
+                        <div id="transcendence-concepts" class="grid grid-cols-1 gap-4"></div>
+                    </div>
+                    <div class="w-full lg:w-2/3">
+                        <div id="transcendence-content-display" class="p-6 rounded-lg bg-white/50 shadow-sm min-h-[400px]"></div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <section id="synthesis" class="py-16">
+            <div class="text-center mb-12">
+                <h3 class="text-3xl font-bold">The Virtuous Cycle of Connection</h3>
+                <p class="mt-4 max-w-3xl mx-auto text-lg text-gray-600">
+                    The three pillars are not isolated; they form a dynamic, integrated system. A strong bond with Self enables authentic connection with the World, and both are sustained by a bond with Transcendence. This creates a powerful, self-reinforcing cycle for personal and organizational growth.
+                </p>
+            </div>
+            <div class="max-w-xl mx-auto flex items-center justify-center">
+                <img src="assets/images/kizuna-framework.png" alt="A diagram showing the three pillars of Kizuna: Self, World, and Transcendence, overlapping with the Kanji for <em>Kizuna</em> in the center." class="max-w-full h-auto rounded-lg shadow-lg">
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="text-center py-8 mt-12 border-t border-gray-200">
+        <p class="text-gray-500">© 2025 Ting Moi Kieng. All Rights Reserved.</p>
+    </footer>
+
+    <script>
+        const appData = {
+            duality: {
+                "Traditional/Cultural View": {
+                    title: "Traditional/Cultural View",
+                    definition: "A deep, innate empathy; mutual support and trust between people, irrespective of background.",
+                    manifestations: "Community activities (e.g., weeding duty), workplace harmony (Wa), polite conversation, gift-giving (omiyage).",
+                    connotation: "A long-term social asset, nurtured through generations, that makes a community safe, peaceful, and strong."
+                },
+                "Official/Post-3/11 View": {
+                    title: "Official/Post-3/11 View",
+                    definition: "Enduring bonds between people; solidarity in the face of calamity; the underlying strength to overcome hardships.",
+                    manifestations: "National slogans (Kizuna, ganbarō), official government magazine, international thank-you campaigns in major newspapers.",
+                    connotation: "A source of national pride; a symbol of Japanese resilience and unity; a tool for international diplomacy and cooperation."
+                },
+                "Critical/Academic View": {
+                    title: "Critical/Academic View",
+                    definition: "A binding effect, like a foot bind (hodashi); a fetter that restricts freedom and enforces conformity.",
+                    manifestations: "Social pressure to not complain; silencing of criticism (e.g., regarding nuclear safety); creation of an 'ideal victim' narrative.",
+                    connotation: "A convenient cover-up tactic for the state to deflect responsibility onto individuals and volunteers; a mask for serious social problems."
+                }
+            },
+            pillars: {
+                self: {
+                    concepts: {
+                        ikigai: { title: "Ikigai (生きがい)", subtitle: "Purpose, reason for being", content: "Translates to 'a reason for being' or 'a passion that gives value and joy to life.' It represents the convergence of what you love, what you are good at, what the world needs, and what you can be paid for. Discovering one's Ikigai is an active journey of self-realization that provides a compass for life, linked to greater satisfaction and well-being." },
+                        hansei: { title: "Hansei (反省)", subtitle: "Self-reflection for improvement", content: "The disciplined practice of 'self-reflection' or 'introspection.' It involves looking inward to evaluate one's actions and decisions, irrespective of success or failure. Hansei fosters radical honesty, requiring one to acknowledge mistakes with humility and greet success with modesty, cultivating self-awareness and accountability." },
+                        wabi_sabi: { title: "Wabi-Sabi (侘寂)", subtitle: "Embracing imperfection", content: "An aesthetic worldview centered on accepting transience and imperfection. It finds beauty in things 'imperfect, impermanent, and incomplete.' Applied to the self, Wabi-Sabi is an antidote to perfectionism, granting 'permission to be yourself' and encouraging an embrace of one's flaws as authentic marks of a life lived." },
+                        three_faces: { title: "The Three Faces", subtitle: "Acknowledging the true self", content: "A philosophy positing we have three 'faces': the first shown to the world, the second to close family, and the third, true self never shown to anyone. <em>Kizuna</em> with Self is the act of turning inward to meet and nurture this third face, building self-esteem from a stable, authentic core rather than from fear of external judgment." }
+                    }
+                },
+                world: {
+                    concepts: {
+                        wa: { title: "Wa (和)", subtitle: "Group harmony, peaceful coexistence", content: "Signifies group harmony and peaceful unity, where a group can 'comfortably and amiably coexist.' It's central to the Japanese identity and often involves prioritizing group interests over individual desires to ensure a smooth, cooperative social order. It's the foundation of social Kizuna." },
+                        omoiyari: { title: "Omoiyari (思いやり)", subtitle: "Empathetic consideration", content: "An intuitive, altruistic sensitivity to the needs and feelings of others, often anticipating them without being asked. This spirit of mutual, proactive support defines <em>Kizuna</em> in its everyday, lived reality, manifesting in countless daily practices that reinforce communal bonds." },
+                        hodashi: { title: "Hodashi (絆) as Fetters", subtitle: "The politics of connection", content: "The critical counter-narrative to the state-promoted Kizuna, especially after the 3/11 disaster. The term was experienced by many survivors as social pressure (a fetter) to be stoic and uncomplaining, silencing criticism of the state's failures and shifting the burden of recovery onto volunteers." },
+                        diplomacy: { title: "Kizuna as Diplomacy", subtitle: "A tool for soft power", content: "Kizuna has been strategically employed as a cornerstone of Japan's international relations. It provides a warm, positive language for framing Japan's global engagement, used in government publications, cultural exchange programs, and aid campaigns to project an image of a friendly, cooperative, and reliable partner." }
+                    }
+                },
+                transcendence: {
+                    concepts: {
+                        musubi: { title: "Musubi (産霊)", subtitle: "Generative, binding force", content: "A spiritual concept referring to the generative, binding, and harmonizing power of the universe—the invisible threads that connect all things. It is the interwoven fabric of time, destiny, and relationships, a spiritual interconnection that gives shape and meaning to existence." },
+                        kami: { title: "Kami (神) in Shintoism", subtitle: "Divine spirits in nature", content: "At the heart of Shinto is the belief that the natural world is inhabited by kami—divine spirits or sacred powers. This animistic view sees the divine in mountains, rivers, trees, and rocks, establishing an inherent, familial bond between humanity and the environment, fostering a powerful conservationist ethic." },
+                        engi: { title: "Engi (縁起) in Buddhism", subtitle: "The web of interdependence", content: "The Buddhist doctrine that no thing exists in isolation; everything arises in dependence upon other factors. The universe is a vast web of mutually supportive relationships, deconstructing the illusion of a separate self and fostering a deep sense of universal compassion and responsibility." },
+                        dō: { title: "Aesthetic Ways (道)", subtitle: "Gateways to transcendence", content: "Traditional arts like the 'way of tea' (chadō) or 'way of calligraphy' (shodō) are not just crafts but disciplines for spiritual training. Through aesthetic ideals like Yūgen (profound grace), Mono no aware (pathos of things), and Ma (negative space), practitioners learn to perceive the interconnectedness of all things." }
+                    }
+                }
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const dualityContent = document.getElementById('duality-content');
+            const dualityChartCtx = document.getElementById('dualityChart').getContext('2d');
+
+            const chartData = {
+                labels: Object.keys(appData.duality),
+                datasets: [{
+                    label: 'Interpretive Lens',
+                    data: [10, 10, 10],
+                    backgroundColor: ['#A69888', '#B9AD9F', '#CBBFAB'],
+                    borderColor: '#FDFBF8',
+                    borderWidth: 2,
+                    borderRadius: 4
+                }]
+            };
+
+            const dualityChart = new Chart(dualityChartCtx, {
+                type: 'bar',
+                data: chartData,
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { enabled: false }
+                    },
+                    scales: {
+                        x: { display: false },
+                        y: { 
+                            ticks: { 
+                                font: { size: 14, weight: '500' },
+                                color: '#38332E'
+                            } 
+                        }
+                    },
+                    onClick: (event, elements) => {
+                        if (elements.length > 0) {
+                            const index = elements[0].index;
+                            const key = chartData.labels[index];
+                            updateDualityContent(key);
+                        }
+                    }
+                }
+            });
+
+            function updateDualityContent(key) {
+                const data = appData.duality[key];
+                if (!data) return;
+                dualityContent.innerHTML = `
+                    <div class="content-fade-in">
+                        <h4 class="text-xl font-bold mb-2 text-[#4A443D]">${data.title}</h4>
+                        <p class="mb-4"><strong class="font-semibold">Definition:</strong> ${data.definition}</p>
+                        <p class="mb-4"><strong class="font-semibold">Manifestations:</strong> ${data.manifestations}</p>
+                        <p><strong class="font-semibold">Connotation:</strong> ${data.connotation}</p>
+                    </div>
+                `;
+            }
+            updateDualityContent("Traditional/Cultural View");
+
+            function createConceptCards(pillarKey, containerId, displayId) {
+                const container = document.getElementById(containerId);
+                const display = document.getElementById(displayId);
+                const concepts = appData.pillars[pillarKey].concepts;
+
+                Object.keys(concepts).forEach((key, index) => {
+                    const concept = concepts[key];
+                    const card = document.createElement('div');
+                    card.className = 'concept-card p-4 rounded-lg border-2 border-transparent cursor-pointer bg-white/50';
+                    card.innerHTML = `
+                        <h5 class="text-lg font-bold kanji-title">${concept.title}</h5>
+                        <p class="text-sm text-gray-600">${concept.subtitle}</p>
+                    `;
+                    card.addEventListener('click', () => {
+                        display.innerHTML = `<div class="content-fade-in">
+                            <h4 class="text-2xl font-bold mb-2 kanji-title">${concept.title}</h4>
+                            <p class="text-gray-700 leading-relaxed">${concept.content}</p>
+                        </div>`;
+                        
+                        document.querySelectorAll(`#${containerId} .concept-card`).forEach(c => c.classList.remove('active'));
+                        card.classList.add('active');
+                    });
+                    container.appendChild(card);
+                    if (index === 0) {
+                        card.click();
+                    }
+                });
+            }
+
+            createConceptCards('self', 'self-concepts', 'self-content-display');
+            createConceptCards('world', 'world-concepts', 'world-content-display');
+            createConceptCards('transcendence', 'transcendence-concepts', 'transcendence-content-display');
+        });
+    </script>
+</body>
+</html>
